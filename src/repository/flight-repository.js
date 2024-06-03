@@ -1,6 +1,43 @@
 const {Flight} =require('../models/index');
+const {Op} = require('sequelize');
 
 class FlightRepository {
+
+    #createFilter(data){
+        let filter={};
+        if(data.arrivalAirportId){
+            filter.arrivalAirportId = data.arrivalAirportId;
+        }
+        if(data.departureAirportId){
+            filter.departureAirportId = data.departureAirportId;
+        }
+        //This comment filter part is not used because it was adding one extra add condition:
+        // (`Flight`.`price` <= '5000' AND `Flight`.`price` >= '2000') AND `Flight`.`price` <= '5000');
+        //code for above filter includes lines marked with ->
+
+        // ->if(data.minPrice && data.maxPrice){
+        //  ->   Object.assign(filter,{
+        //    ->     [Op.and]: [
+        //      ->       {price: {[Op.lte]: data.maxPrice}},
+        //        ->     {price: {[Op.gte]: data.minPrice}}
+        //   ->      ]
+        //   ->  })
+        // ->}
+
+        let priceFilter = [];
+        if(data.minPrice){
+            //-> Object.assign(filter,{price: {[Op.gte]: data.minPrice}});
+            priceFilter.push({price: {[Op.gte]: data.minPrice}});
+        }
+        if(data.maxPrice){
+            //-> Object.assign(filter,{price: {[Op.lte]: data.maxPrice}});
+            priceFilter.push({price: {[Op.lte]: data.maxPrice}});
+        }
+        Object.assign(filter,{[Op.and]: priceFilter});
+        return filter;
+
+    }
+
     async createFlight(data){
         try{
             const flight = await Flight.create(data);
@@ -9,6 +46,34 @@ class FlightRepository {
         }catch(error){
             console.log("Something went wrong in the repository layer");
             throw {error};
+
+        }
+    }
+
+    async getFlight(flightId){
+        try{
+            const flight = await Flight.findByPk(flightId);
+            return flight;
+
+        }catch(error){
+            console.log("Something went wrong in the repository layer");
+            throw {error};
+
+        }
+    }
+
+    async getAllFlights(filter){
+        try{
+            const filterObject = this.#createFilter(filter);
+            const flight = await Flight.findAll({
+                where: filterObject
+            });
+            return flight;
+
+        }catch(error){
+            console.log("Something went wrong in the repository layer");
+            throw {error};
+
 
         }
     }
