@@ -18,7 +18,7 @@ const setupAndStartServer = async () => {
    app.use(bodyParser.urlencoded({ extended: true }));
    app.use('/api', ApiRoutes);
 
-
+// console.log(db);
 
    app.listen(PORT, async () => {
       console.log(`Server started at ${PORT}`);
@@ -27,10 +27,8 @@ const setupAndStartServer = async () => {
          console.log(2564);
           db.sequelize.sync({alter: true});
       }
-      await Airplane.truncate();
-      await Airport.truncate();
-      
-
+     
+// console.log(Airplane);
 
 
 
